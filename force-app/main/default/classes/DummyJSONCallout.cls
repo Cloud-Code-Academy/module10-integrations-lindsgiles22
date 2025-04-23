@@ -117,18 +117,51 @@ public with sharing class DummyJSONCallout {
      * @param contactId The Salesforce Contact ID used to generate the JSON payload for the external system.
      */
 	
-	public static void postCreateDummyJSONUser(String contactId) {
-		// Create HTTP request to send.
+	 public static void postCreateDummyJSONUser(String contactId) {
+		try {
+			// Query the contact
+			Contact c = [
+				SELECT Id, FirstName, LastName, Email, Phone 
+				FROM Contact 
+				WHERE Id = :contactId 
+				LIMIT 1
+			];
 
-		// Set the endpoint URL. Use direct URL or for best practices use Named Credential.
+			// Create HTTP request
+			HttpRequest req = new HttpRequest();
+			req.setEndpoint('callout:DummyJSON/users/add');
+			req.setMethod('POST');
 
-		// Set the HTTP method to POST.
+			// Set the request body using helper method
+			String jsonBody = generateDummyJsonUserPayload(c);
+			req.setBody(jsonBody);
 
-		// Set the body using generateDummyJsonUserPayload method.
+			// Send the request
+			Http http = new Http();
+			HttpResponse res = http.send(req);
 
-		// Send the HTTP request and get the response.
+			// If successful, update custom timestamp field
+			if (res.getStatusCode() >= 200 && res.getStatusCode() < 300) {
+				c.DummyJSON_Last_Updated__c = System.now();
+				update c;
+				System.debug('Contact updated with DummyJSON_Last_Updated__c');
+			} else {
+				System.debug('Callout failed: ' + res.getStatusCode() + ' - ' + res.getBody());
+			}
 
-		// If the HTTP response code is successful, update the contact.
+		} catch (Exception e) {
+			System.debug('Error in postCreateDummyJSONUser: ' + e.getMessage());
+		}
+	}
+
+	// Helper method
+	private static String generateDummyJsonUserPayload(Contact c) {
+		Map<String, Object> userMap = new Map<String, Object>();
+		userMap.put('firstName', c.FirstName);
+		userMap.put('lastName', c.LastName);
+		userMap.put('email', c.Email);
+		userMap.put('phone', c.Phone);
+		return JSON.serialize(userMap);
 	}
 
 	/*
