@@ -19,10 +19,43 @@
 trigger ContactTrigger on Contact(before insert) {
 	// When a contact is inserted
 	// if DummyJSON_Id__c is null, generate a random number between 0 and 100 and set this as the contact's DummyJSON_Id__c value
-
-	//When a contact is inserted
+	if(Trigger.isBefore && Trigger.isInsert) {
+		for (Contact c: Trigger.new) {
+			if (c.DummyJSON_Id__c == null) {
+				c.DummyJSON_Id__c = String.valueOf(Math.mod(Crypto.getRandomInteger(), 101));
+			}
+		}
+	}
 	// if DummyJSON_Id__c is less than or equal to 100, call the getDummyJSONUserFromId API
-
+	if (Trigger.isAfter && Trigger.isInsert) {
+		for (Contact c: Trigger.new) {
+			Integer dummyId;
+			try {
+				dummyId = Integer.valueOf(c.DummyJSON_Id__c);
+			} catch (Exception e) {
+				continue; // Skip invalid Ids
+			}
+			if (dummyID <= 100) {
+				DummyJSONCallout.getDummyJSONUserFromIdAsync(c.DummyJSON_Id__c);
+			}
+		}
+	}
 	//When a contact is updated
 	// if DummyJSON_Id__c is greater than 100, call the postCreateDummyJSONUser API
+	if (Trigger.isAfter && Trigger.isUpdate) {
+		for (Contact c : Trigger.new) {
+			Contact old = Trigger.oldMap.get(c.Id);
+			if (c.DummyJSON_Id__c != old.DummyJSON_Id__c) {
+				Integer dummyId;
+				try {
+					dummyID = Integer.valueOf(c.DummyJSON_Id__c);
+				} catch (Exception e) {
+					continue;
+				}
+				if (dummyID > 100) {
+					DummyJSONCallout.postCreateDummyJSONUserAsync(c.Id);
+				}
+			}
+		}
+	}
 }
