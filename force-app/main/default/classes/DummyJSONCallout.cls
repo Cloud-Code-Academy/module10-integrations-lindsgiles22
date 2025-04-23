@@ -146,6 +146,8 @@ public with sharing class DummyJSONCallout {
 	} catch (Exception e) {
 		System.debug('Exception during callout: ' + e.getMessage());
 	}
+}
+	
 
 	/*
 	 * Question 4
@@ -176,4 +178,4 @@ public with sharing class DummyJSONCallout {
 
 		return JSON.serialize(userMap);
 		}
-}
+	}
