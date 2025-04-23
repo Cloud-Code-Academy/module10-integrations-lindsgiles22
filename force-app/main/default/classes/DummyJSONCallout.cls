@@ -51,7 +51,6 @@ public with sharing class DummyJSONCallout {
 				// Deserialize the response
 				Contact c = createContactFromJson(res.getBody());
 				c.DummyJSON_Id__c = dummyUserId;
-
 				upsert c DummyJSON_Id__c;
 				System.debug('Contact upserted successfully.');
 			} else {
@@ -119,49 +118,33 @@ public with sharing class DummyJSONCallout {
 	
 	 public static void postCreateDummyJSONUser(String contactId) {
 		try {
-			// Query the contact
 			Contact c = [
-				SELECT Id, FirstName, LastName, Email, Phone 
-				FROM Contact 
-				WHERE Id = :contactId 
-				LIMIT 1
-			];
+				SELECT Id, FirstName, LastName, Email, Phone
+			 	FROM Contact
+				WHERE Id = :contactId
+			 	LIMIT 1
+			];	
+		// Create HTTP request
+		// Set the request body using helper method
+		HttpRequest req = new HttpRequest();
+		req.setEndpoint('callout:DummyJSON/users/add');
+		req.setMethod('POST');
+		req.setBody(generateDummyJsonUserPayload(c));
 
-			// Create HTTP request
-			HttpRequest req = new HttpRequest();
-			req.setEndpoint('callout:DummyJSON/users/add');
-			req.setMethod('POST');
+		// Send the request
+		Http http = new Http();
+		HttpResponse res = http.send(req);
 
-			// Set the request body using helper method
-			String jsonBody = generateDummyJsonUserPayload(c);
-			req.setBody(jsonBody);
-
-			// Send the request
-			Http http = new Http();
-			HttpResponse res = http.send(req);
-
-			// If successful, update custom timestamp field
-			if (res.getStatusCode() >= 200 && res.getStatusCode() < 300) {
-				c.DummyJSON_Last_Updated__c = System.now();
-				update c;
-				System.debug('Contact updated with DummyJSON_Last_Updated__c');
-			} else {
-				System.debug('Callout failed: ' + res.getStatusCode() + ' - ' + res.getBody());
-			}
-
-		} catch (Exception e) {
-			System.debug('Error in postCreateDummyJSONUser: ' + e.getMessage());
+		// If successful, update custom timestamp field
+		if (res.getStatusCode() >= 200 && res.getStatusCode() < 300) {
+			c.DummyJSON_Last_Updated__c = System.now();
+			update c;
+			System.debug('Contact updated with DummyJSON_Last_Updated__c');
+		} else {
+			System.debug('Callout failed: ' + res.getStatusCode() + ' - ' + res.getBody());
 		}
-	}
-
-	// Helper method
-	private static String generateDummyJsonUserPayload(Contact c) {
-		Map<String, Object> userMap = new Map<String, Object>();
-		userMap.put('firstName', c.FirstName);
-		userMap.put('lastName', c.LastName);
-		userMap.put('email', c.Email);
-		userMap.put('phone', c.Phone);
-		return JSON.serialize(userMap);
+	} catch (Exception e) {
+		System.debug('Exception during callout: ' + e.getMessage());
 	}
 
 	/*
@@ -180,15 +163,17 @@ public with sharing class DummyJSONCallout {
      * @return String The JSON string payload that represents the Contact's details.
      */
 	@TestVisible // Allows test class to see this method. Since it is private, it would not be visible otherwise.
-	private static String generateDummyJsonUserPayload(String contactId) {
-		// Query the contact to get the field values to generate the JSON payload.
-
+	private static String generateDummyJsonUserPayload(Contact c) {
 		// Create a map of the field values.
-
 		// Serialize the map into a JSON string.
 		// Make sure to check that required contacts fields have a value. Default the value to unknown if it does not exists.
-		// Integration data can change over time. It is a best practice to add safeguards/validation to ensure the integration does not break.
+		Map<String, Object> userMap = new Map<String, Object>();
+		userMap.put('salesforceId', c.Id);
+		userMap.put('firstName', String.isBlank(c.FirstName) ? 'Unknown' : c.FirstName);
+		userMap.put('lastName', String.isBlank(c.LastName) ? 'Unknown' : c.LastName);
+		userMap.put('email', String.isBlank(c.Email) ? 'Unknown' : c.Email);
+		userMap.put('phone', String.isBlank(c.Phone) ? 'Unknown' : c.Phone);
 
-		return null;
-	}
+		return JSON.serialize(userMap);
+		}
 }
