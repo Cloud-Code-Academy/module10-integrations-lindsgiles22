@@ -36,7 +36,7 @@ trigger ContactTrigger on Contact(before insert) {
 				continue; // Skip invalid Ids
 			}
 			if (dummyID <= 100) {
-				DummyJSONCallout.getDummyJSONUserFromIdAsync(c.DummyJSON_Id__c);
+				DummyJSONCallout.getDummyJSONUserFromId(c.DummyJSON_Id__c);
 			}
 		}
 	}
@@ -53,7 +53,7 @@ trigger ContactTrigger on Contact(before insert) {
 					continue;
 				}
 				if (dummyID > 100) {
-					DummyJSONCallout.postCreateDummyJSONUserAsync(c.Id);
+					DummyJSONCallout.postCreateDummyJSONUser(c.Id);
 				}
 			}
 		}
