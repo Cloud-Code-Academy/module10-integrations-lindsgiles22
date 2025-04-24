@@ -32,7 +32,7 @@ trigger ContactTrigger on Contact(before insert, after insert, after update) {
     if (Trigger.isAfter) {
         for (Contact c: Trigger.new) {
             // Check if DummyJSON_Id__c is a valid numeric string
-            if (c.DummyJSON_Id__c != null && !String.isEmpty(c.DummyJSON_ID__c)) {
+            if (c.DummyJSON_Id__c != null && !String.isEmpty(c.DummyJSON_Id__c)) {
                 try {
                     Integer dummyId = Integer.valueOf(c.DummyJSON_Id__c);
 
