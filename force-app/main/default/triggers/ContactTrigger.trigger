@@ -22,7 +22,10 @@ trigger ContactTrigger on Contact(before insert) {
 	if(Trigger.isBefore && Trigger.isInsert) {
 		for (Contact c: Trigger.new) {
 			if (c.DummyJSON_Id__c == null) {
-				c.DummyJSON_Id__c = String.valueOf(Math.mod(Crypto.getRandomInteger(), 101));
+				// Generate a random number between 0 and 100
+				Integer randomNumber = Math.mod(Crypto.getRandomInteger(), 101);
+				// Ensure value is valid numeric string
+				c.DummyJSON_Id__c = String.valueOf(randomNumber);
 			}
 		}
 	}
