@@ -20,7 +20,7 @@ trigger ContactTrigger on Contact(before insert, after insert, after update) {
     // Check for trigger types before processing
     if (Trigger.isBefore && Trigger.isInsert) {
         for (Contact c: Trigger.new) {
-            if (c.DummyJSON_Id__c == null) {
+            if (c.DummyJSON_Id__c == null || !c.DummyJSON_Id__c.isNumeric()) {
                 // Generate a random number between 0 and 100
                 Integer randomNumber = Math.mod(Crypto.getRandomInteger(), 101);
                 // Ensure value is valid numeric string
