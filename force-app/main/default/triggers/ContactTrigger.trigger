@@ -32,7 +32,11 @@ trigger ContactTrigger on Contact(before insert, after insert, after update) {
 
         if (!toUpdate.isEmpty()) {
             assignRandomDummyIds(toUpdate);
-            updateDummyJSONIdInFuture(toUpdate);
+			List<Id> toUpdateIds = new List<Id>();
+			for (Contact c : toUpdate) {
+				toUpdateIds.add(c.Id);
+			}
+            updateDummyJSONIdInFuture(toUpdateIds);
         }
     }
 
@@ -63,8 +67,9 @@ private static void assignRandomDummyIds(List<Contact> contacts) {
 }
 // Future method to handle updates after insert to avoid the read only state error
 @future
-public static void updateDummyJSONInFuture(List<Contact> toUpdate) {
-	update toUpdate;
+public static void updateDummyJSONInFuture(List<Id> contactIds) {
+	List<Contact> contactsToUpdate = [SELECT Id, DummyJSON_Id__c FROM Contact WHERE Id IN :contactIds];
+	update contactsToUpdate;
 }
 }
 
