@@ -17,38 +17,48 @@
  * Optional Challenge: Use a trigger handler class to implement the trigger logic.
  */
 trigger ContactTrigger on Contact(before insert, after insert, after update) {
-    // Check for trigger types before processing
     if (Trigger.isBefore && Trigger.isInsert) {
-        for (Contact c: Trigger.new) {
+        assignRandomDummyIds(Trigger.new);
+    }
+
+    if (Trigger.isAfter && Trigger.isInsert) {
+        List<Contact> toUpdate = new List<Contact>();
+
+        for (Contact c : Trigger.new) {
             if (c.DummyJSON_Id__c == null || !c.DummyJSON_Id__c.isNumeric()) {
-                // Generate a random number between 0 and 100
-                Integer randomNumber = Math.mod(Crypto.getRandomInteger(), 101);
-                // Ensure value is valid numeric string
-                c.DummyJSON_Id__c = String.valueOf(randomNumber);
+                toUpdate.add(c);
             }
+        }
+
+        if (!toUpdate.isEmpty()) {
+            assignRandomDummyIds(toUpdate);
+            update toUpdate;
         }
     }
 
     if (Trigger.isAfter) {
-        for (Contact c: Trigger.new) {
-            // Check if DummyJSON_Id__c is a valid numeric string
+        for (Contact c : Trigger.new) {
             if (c.DummyJSON_Id__c != null && !String.isEmpty(c.DummyJSON_Id__c)) {
                 try {
                     Integer dummyId = Integer.valueOf(c.DummyJSON_Id__c);
-
-                    // If the DummyJSON_Id__c is a valid number, proceed with the logic
                     if (dummyId <= 100 && Trigger.isInsert) {
-                        // Trigger the API call if it's an insert and the DummyJSON_Id__c is valid
                         DummyJSONCallout.getDummyJSONUserFromId(c.DummyJSON_Id__c);
                     } else if (dummyId > 100 && Trigger.isUpdate) {
-                        // Trigger the API call if it's an update and the DummyJSON_Id__c is greater than 100
                         DummyJSONCallout.postCreateDummyJSONUser(c.Id);
                     }
                 } catch (Exception e) {
-                    // Log any errors related to invalid numeric values
-                    System.debug('Error: DummyJSON_Id__c is not a valid numeric string. Contact Id: ' + c.ID + ' Error: ' + e.getMessage());
+                    System.debug('Error: DummyJSON_Id__c is not a valid numeric string. Contact Id: ' + c.Id + ' Error: ' + e.getMessage());
                 }
             }
+        }
+    }
+}
+
+private static void assignRandomDummyIds(List<Contact> contacts) {
+    for (Contact c : contacts) {
+        if (c.DummyJSON_Id__c == null || !c.DummyJSON_Id__c.isNumeric()) {
+            Integer randomNumber = Math.mod(Crypto.getRandomInteger(), 101);
+            c.DummyJSON_Id__c = String.valueOf(randomNumber);
         }
     }
 }
