@@ -16,13 +16,60 @@
  * 
  * Optional Challenge: Use a trigger handler class to implement the trigger logic.
  */
-trigger ContactTrigger on Contact(before insert) {
-	// When a contact is inserted
-	// if DummyJSON_Id__c is null, generate a random number between 0 and 100 and set this as the contact's DummyJSON_Id__c value
+trigger ContactTrigger on Contact(before insert, after insert, after update) {
+    if (Trigger.isBefore && Trigger.isInsert) {
+        assignRandomDummyIds(Trigger.new);
+    }
 
-	//When a contact is inserted
-	// if DummyJSON_Id__c is less than or equal to 100, call the getDummyJSONUserFromId API
+    if (Trigger.isAfter && Trigger.isInsert) {
+        List<Contact> toUpdate = new List<Contact>();
 
-	//When a contact is updated
-	// if DummyJSON_Id__c is greater than 100, call the postCreateDummyJSONUser API
+        for (Contact c : Trigger.new) {
+            if (c.DummyJSON_Id__c == null || !c.DummyJSON_Id__c.isNumeric()) {
+                toUpdate.add(c);
+            }
+        }
+
+        if (!toUpdate.isEmpty()) {
+            assignRandomDummyIds(toUpdate);
+			List<Id> toUpdateIds = new List<Id>();
+			for (Contact c : toUpdate) {
+				toUpdateIds.add(c.Id);
+			}
+            updateDummyJSONIdInFuture(toUpdateIds);
+        }
+    }
+
+    if (Trigger.isAfter && Trigger.isUpdate) {
+        for (Contact c : Trigger.new) {
+            if (c.DummyJSON_Id__c != null && !String.isEmpty(c.DummyJSON_Id__c)) {
+                try {
+                    Integer dummyId = Integer.valueOf(c.DummyJSON_Id__c);
+                    if (dummyId <= 100 && Trigger.isInsert) {
+                        DummyJSONCallout.getDummyJSONUserFromId(c.DummyJSON_Id__c);
+                    } else if (dummyId > 100 && Trigger.isUpdate) {
+                        DummyJSONCallout.postCreateDummyJSONUser(c.Id);
+                    }
+                } catch (Exception e) {
+                    System.debug('Error: DummyJSON_Id__c is not a valid numeric string. Contact Id: ' + c.Id + ' Error: ' + e.getMessage());
+                }
+            }
+        }
+    }
+// Helper method to assign random DummyJSON_Id__c
+private static void assignRandomDummyIds(List<Contact> contacts) {
+    for (Contact c : contacts) {
+        if (c.DummyJSON_Id__c == null || !c.DummyJSON_Id__c.isNumeric()) {
+            Integer randomNumber = Math.mod(Crypto.getRandomInteger(), 101);
+            c.DummyJSON_Id__c = String.valueOf(randomNumber);
+        }
+    }
 }
+// Future method to handle updates after insert to avoid the read only state error
+@future
+public static void updateDummyJSONIdInFuture(List<Id> contactIds) {
+	List<Contact> contactsToUpdate = [SELECT Id, DummyJSON_Id__c FROM Contact WHERE Id IN :contactIds];
+	update contactsToUpdate;
+}
+}
+

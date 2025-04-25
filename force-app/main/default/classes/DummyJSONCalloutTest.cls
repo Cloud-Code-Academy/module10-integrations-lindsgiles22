@@ -99,7 +99,7 @@ public with sharing class DummyJSONCalloutTest {
 		insert testContact;
 
 		// Call the method
-		String payload = DummyJSONCallout.generateDummyJsonUserPayload(testContact.Id);
+		String payload = DummyJSONCallout.generateDummyJsonUserPayload(testContact);
 
 		// Parse the generated JSON
 		Map<String, Object> payloadMap = (Map<String, Object>) JSON.deserializeUntyped(payload);

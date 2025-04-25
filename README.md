@@ -1,3 +1,4 @@
+[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=19264647&assignment_repo_type=AssignmentRepo)
 # Developer Kickstart: Integrations
 This repository is a pivotal element of the Developer Kickstart curriculum at Cloud Code Academy. Crafted for aspiring Salesforce developers, this module delves into the intricate domain of integrations, spotlighting the principles, tools, and best practices necessary to effectively connect Salesforce with external systems and platforms.
 
