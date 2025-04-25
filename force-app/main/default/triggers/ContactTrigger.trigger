@@ -52,7 +52,6 @@ trigger ContactTrigger on Contact(before insert, after insert, after update) {
             }
         }
     }
-}
 
 private static void assignRandomDummyIds(List<Contact> contacts) {
     for (Contact c : contacts) {
@@ -61,4 +60,5 @@ private static void assignRandomDummyIds(List<Contact> contacts) {
             c.DummyJSON_Id__c = String.valueOf(randomNumber);
         }
     }
+}
 }
