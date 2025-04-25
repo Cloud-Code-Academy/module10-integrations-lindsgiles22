@@ -67,7 +67,7 @@ private static void assignRandomDummyIds(List<Contact> contacts) {
 }
 // Future method to handle updates after insert to avoid the read only state error
 @future
-public static void updateDummyJSONInFuture(List<Id> contactIds) {
+public static void updateDummyJSONIdInFuture(List<Id> contactIds) {
 	List<Contact> contactsToUpdate = [SELECT Id, DummyJSON_Id__c FROM Contact WHERE Id IN :contactIds];
 	update contactsToUpdate;
 }
