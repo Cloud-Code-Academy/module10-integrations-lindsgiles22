@@ -52,7 +52,6 @@ trigger ContactTrigger on Contact(before insert, after insert, after update) {
             }
         }
     }
-}
 // Helper method to assign random DummyJSON_Id__c
 private static void assignRandomDummyIds(List<Contact> contacts) {
     for (Contact c : contacts) {
@@ -66,5 +65,6 @@ private static void assignRandomDummyIds(List<Contact> contacts) {
 @future
 public static void updateDummyJSONInFuture(List<Contact> toUpdate) {
 	update toUpdate;
+}
 }
 
