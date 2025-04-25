@@ -32,11 +32,11 @@ trigger ContactTrigger on Contact(before insert, after insert, after update) {
 
         if (!toUpdate.isEmpty()) {
             assignRandomDummyIds(toUpdate);
-            update toUpdate;
+            updateDummyJSONIdInFuture(toUpdate);
         }
     }
 
-    if (Trigger.isAfter) {
+    if (Trigger.isAfter && Trigger.isUpdate) {
         for (Contact c : Trigger.new) {
             if (c.DummyJSON_Id__c != null && !String.isEmpty(c.DummyJSON_Id__c)) {
                 try {
@@ -52,7 +52,8 @@ trigger ContactTrigger on Contact(before insert, after insert, after update) {
             }
         }
     }
-
+}
+// Helper method to assign random DummyJSON_Id__c
 private static void assignRandomDummyIds(List<Contact> contacts) {
     for (Contact c : contacts) {
         if (c.DummyJSON_Id__c == null || !c.DummyJSON_Id__c.isNumeric()) {
@@ -61,4 +62,9 @@ private static void assignRandomDummyIds(List<Contact> contacts) {
         }
     }
 }
+// Future method to handle updates after insert to avoid the read only state error
+@future
+public static void updateDummyJSONInFuture(List<Contact> toUpdate) {
+	update toUpdate;
 }
+
